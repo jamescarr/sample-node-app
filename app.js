@@ -4,9 +4,8 @@
  */
 
 var express = require('express');
-
 var app = module.exports = express.createServer();
-
+var io = require('socket.io').listen(app)
 // Configuration
 
 app.configure(function(){
@@ -33,6 +32,11 @@ app.get('/', function(req, res){
     title: 'Express'
   });
 });
-
+// lets constantly update the client side
+io.sockets.on('connection', function (socket) {
+  setInterval(function(){
+    socket.emit('current-time', {time:new Date()});
+  }, 1000);
+})
 app.listen(3000);
 console.log("Express server listening on port %d", app.address().port);
