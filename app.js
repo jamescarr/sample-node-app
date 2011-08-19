@@ -63,7 +63,9 @@ app.post('/users/new', function(req, res){
     } else {
       var imageName = files.profileImage.name.toLowerCase()
        fs.readFile(files.profileImage.path, function(err, image_buffer){
-         new GridStore(mongoose.connection.db, imageName, 'w').open(function(err, gs) {
+         new GridStore(mongoose.connection.db, imageName, 'w',
+           {'content-type':files.profileImage.contentType}
+           ).open(function(err, gs) {
             gs.write(image_buffer, function(err, gs) {
               gs.close(function(err) {
                 var User = mongoose.model('User')
@@ -94,10 +96,9 @@ app.post('/users/new', function(req, res){
 app.get('/profileImages/:image', function(req, res) {
   new GridStore(mongoose.connection.db, req.param('image'), 'r').open(function(err, gs) {
     gs.read(function(err, buffer){
-      console.log(err);
       res.send(
         new Buffer(buffer, 'binary'),
-        {'Content-Type':'image/jpeg'}
+        {'Content-Type':gs.contentType}
         );
       gs.close(function(err){
       });
