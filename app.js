@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
    , GridStore = require('mongodb').GridStore;
 var io = require('socket.io').listen(app)
 var fs = require('fs');
+
 // Mongoose
 var UserSchema = new Schema({
   firstName: String,
@@ -37,10 +38,6 @@ app.configure(function(){
   app.use(express.static(__dirname + '/public'));
 });
 
-app.configure('production', function(){
-  app.use(express.errorHandler()); 
-});
-
 // Routes
 
 app.get('/', function(req, res){
@@ -52,6 +49,7 @@ app.get('/', function(req, res){
     });
   });
 });
+
 app.get('/users/new', function(req, res){
   res.render('new-user',{title:'Add a User'});
 });
@@ -96,10 +94,7 @@ app.post('/users/new', function(req, res){
 app.get('/profileImages/:image', function(req, res) {
   new GridStore(mongoose.connection.db, req.param('image'), 'r').open(function(err, gs) {
     gs.read(function(err, buffer){
-      res.send(
-        new Buffer(buffer, 'binary'),
-        {'Content-Type':gs.contentType}
-        );
+      res.send(new Buffer(buffer, 'binary'), {'Content-Type':gs.contentType});
       gs.close(function(err){
       });
     });
