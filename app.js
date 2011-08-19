@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
    , GridStore = require('mongodb').GridStore;
 var io = require('socket.io').listen(app)
 var fs = require('fs');
+var spawn = require('child_process').spawn;
 
 // Mongoose
 var UserSchema = new Schema({
@@ -107,5 +108,33 @@ io.sockets.on('connection', function (socket) {
     socket.emit('current-time', {time:new Date()});
   }, 5000);
 })
+
+app.get('/source.zip', function(req, res){
+  var zip = spawn('zip', ['-r', '-', process.cwd()]);
+
+  res.contentType('zip');
+
+  // Keep writing stdout to res
+  zip.stdout.on('data', function (data) {
+      res.write(data);
+  });
+
+  zip.stderr.on('data', function (data) {
+      // Uncomment to see the files being added
+      //console.log('zip stderr: ' + data);
+  });
+
+  // End the response on zip exit
+  zip.on('exit', function (code) {
+      if(code !== 0) {
+          res.statusCode = 500;
+          console.log('zip process exited with code ' + code);
+          res.end();
+      } else {
+          res.end();
+      }
+  });
+
+});
 app.listen(3000);
 console.log("Express server listening on port %d", app.address().port);
