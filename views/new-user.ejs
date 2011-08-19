@@ -1,9 +1,13 @@
-<form action="/users/new" method="post">
+<form action="/users/new" method="post" enctype="multipart/form-data">
   <label>First Name: </label>
-  <input type="text" name="user[firstName]"/>
+  <input type="text" name="firstName"/>
   <br/> <!-- I'm lazy -->
   <label>Last Name: </label>
-  <input type="text" name="user[lastName]"/>
+  <input type="text" name="lastName"/>
   <br/> 
+  <label>Profile Image: </label>
+  <input type="file" name="profileImage"/>
+  <br/> 
+  
   <input type="submit" value="Save"/>
 </form>

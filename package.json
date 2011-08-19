@@ -7,5 +7,7 @@
     , "ejs": ">= 0.0.1"
     , "socket.io": ">= 0.0.1"
     , "mongoose": ">= 0.0.1"
+    , "mongodb": ">= 0.0.1"
+    , "connect-form": ">= 0.0.1"
   }
 }

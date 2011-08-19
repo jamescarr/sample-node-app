@@ -3,16 +3,19 @@
  * Module dependencies.
  */
 
-var express = require('express');
-var app = module.exports = express.createServer();
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
+var express = require('express')
+    , form = require('connect-form');
+var app = module.exports = express.createServer(form({keepExtensions:true}));
+var mongoose = require('mongoose')
+   , Schema = mongoose.Schema
+   , GridStore = require('mongodb').GridStore;
 var io = require('socket.io').listen(app)
-
+var fs = require('fs');
 // Mongoose
 var UserSchema = new Schema({
   firstName: String,
-  lastName: String
+  lastName: String,
+  profileImage: String
 });
 var User = mongoose.model('User', UserSchema);
 mongoose.connect('mongodb://localhost/sample-app')
@@ -23,6 +26,7 @@ User.find({}, function(err, users) {
     user.remove();
   });
 });
+
 // Configuration
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -41,7 +45,7 @@ app.configure('production', function(){
 
 app.get('/', function(req, res){
   var User = mongoose.model('User');
-  User.find({}, ['firstName', 'lastName'], function(err, users){
+  User.find({}, ['firstName', 'lastName', 'profileImage'], function(err, users){
     res.render('index', {
       title: 'Express',
       users: users
@@ -51,18 +55,61 @@ app.get('/', function(req, res){
 app.get('/users/new', function(req, res){
   res.render('new-user',{title:'Add a User'});
 });
+
 app.post('/users/new', function(req, res){
-  var User = mongoose.model('User'),
-    user = new User(req.param('user'));
-  user.save();
-  res.redirect('/');
+   req.form.complete(function(err, fields, files){
+    if (err) {
+      next(err);
+    } else {
+      var imageName = files.profileImage.name.toLowerCase()
+       fs.readFile(files.profileImage.path, function(err, image_buffer){
+         new GridStore(mongoose.connection.db, imageName, 'w').open(function(err, gs) {
+            gs.write(image_buffer, function(err, gs) {
+              gs.close(function(err) {
+                var User = mongoose.model('User')
+                  user = new User();
+                user.profileImage = imageName;
+                user.firstName = fields.firstName
+                user.lastName = fields.lastName
+                user.save();
+              });
+            });
+          });
+       }); 
+        
+      res.redirect('/');
+    }
+  });
+
+  // We can add listeners for several form
+  // events such as "progress"
+  req.form.on('progress', function(bytesReceived, bytesExpected){
+    var percent = (bytesReceived / bytesExpected * 100) | 0;
+    process.stdout.write('Uploading: %' + percent + '\r');
+  });
+
+});
+
+// serve up the image
+app.get('/profileImages/:image', function(req, res) {
+  new GridStore(mongoose.connection.db, req.param('image'), 'r').open(function(err, gs) {
+    gs.read(function(err, buffer){
+      console.log(err);
+      res.send(
+        new Buffer(buffer, 'binary'),
+        {'Content-Type':'image/jpeg'}
+        );
+      gs.close(function(err){
+      });
+    });
+  });
 });
 
 // lets constantly update the client side
 io.sockets.on('connection', function (socket) {
   setInterval(function(){
     socket.emit('current-time', {time:new Date()});
-  }, 50);
+  }, 5000);
 })
 app.listen(3000);
 console.log("Express server listening on port %d", app.address().port);
