@@ -4,7 +4,7 @@ var TwilioClient = require('twilio').Client,
 var config = {
    account_sid: 'AC97f3ce6e4134aef9b1927c4f72dc71f0'
  , auth_token: '64da6fe27322bf04b64fdaa9b645b4b3'
- , hostname: 'localhost'
+ , hostname: 'surety.me'
 };
 var client = new TwilioClient(config.account_sid, config.auth_token, config.hostname);
 

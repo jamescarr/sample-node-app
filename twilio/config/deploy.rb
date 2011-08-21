@@ -31,7 +31,7 @@ namespace :deploy do
 
   desc "Check required packages and install if packages are not installed"
   task :update_packages, roles => :app do
-    run "cd #{release_path} && npm install"
+    run "cd #{release_path}/twilio && npm install"
   end
 
   task :create_deploy_to_with_sudo, :roles => :app do
