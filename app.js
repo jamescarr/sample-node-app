@@ -1,17 +1,17 @@
-
 /**
  * Module dependencies.
  */
 
-var express = require('express')
-    , form = require('connect-form');
+var express = require('express');
+  , form = require('connect-form')
+  , mongoose = require('mongoose')
+  , Schema = mongoose.Schema
+  , GridStore = require('mongodb').GridStore;
+  , fs = require('fs')
+  , spawn = require('child_process').spawn;
+
 var app = module.exports = express.createServer(form({keepExtensions:true}));
-var mongoose = require('mongoose')
-   , Schema = mongoose.Schema
-   , GridStore = require('mongodb').GridStore;
 var io = require('socket.io').listen(app)
-var fs = require('fs');
-var spawn = require('child_process').spawn;
 
 // Mongoose
 var UserSchema = new Schema({
