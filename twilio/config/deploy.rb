@@ -4,7 +4,7 @@ require 'capistrano/ext/multistage'
 
 set :application, "twilio-spike"
 set :node_file, "spike.js"
-set :host, "surety.me"
+set :host, "localhost"
 set :repository, "git@github.com:jamescarr/sample-node-app.git"
 set :user, "node"
 set :admin_runner, 'node'
